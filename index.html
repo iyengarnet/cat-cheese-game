@@ -5,13 +5,45 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Cat & Cheese Race</title>
 <style>
-body{text-align:center;font-family:system-ui;background:#f5f7fb}
-#b{display:grid;grid-template-columns:repeat(11,1fr);max-width:500px;margin:auto;background:#234;padding:5px;border-radius:12px}
-.c{aspect-ratio:1;display:grid;place-items:center;font-size:22px}
-.w{background:#234}.f{background:#fff3cf}.o{background:#ffc477}.u{background:#8dd7ff}.g{background:#9be6a6}.x{background:#d9f5b0}
-button{padding:9px 14px;border-radius:10px;border:1px solid #bbb;background:white;font-weight:bold}
+body{
+  text-align:center;
+  font-family:system-ui;
+  background:#f5f7fb;
+  margin:10px;
+}
+#b{
+  display:grid;
+  grid-template-columns:repeat(30,1fr);
+  width:min(94vw,600px);
+  margin:auto;
+  background:#234;
+  padding:4px;
+  border-radius:12px;
+  touch-action:manipulation;
+}
+.c{
+  aspect-ratio:1;
+  display:grid;
+  place-items:center;
+  font-size:clamp(9px,2.4vw,18px);
+}
+.w{background:#234}
+.f{background:#fff3cf}
+.o{background:#ffc477}
+.u{background:#8dd7ff}
+.g{background:#9be6a6}
+.p{background:#d8b4fe}
+.x{background:#d9f5b0}
+button{
+  padding:9px 14px;
+  border-radius:10px;
+  border:1px solid #bbb;
+  background:white;
+  font-weight:bold;
+}
 </style>
 </head>
+
 <body>
 <h1>🐱 Cat & Cheese Race</h1>
 <button onclick="newMaze()">NEW MAZE</button>
@@ -20,266 +52,197 @@ button{padding:9px 14px;border-radius:10px;border:1px solid #bbb;background:whit
 <div id="b"></div>
 
 <script>
-let n=11,G,C,Z,on=0,done=0,st,rt,ct;
+const n=31;
+let G,C,Z,on=0,done=0,st,rt,ct;
+
 const b=document.getElementById("b");
 const t=document.getElementById("t");
 const s=document.getElementById("s");
 
 function newMaze(){
- clearInterval(rt);clearInterval(ct);
- G=Array.from({length:n},()=>Array(n).fill(1));
- let q=[[1,1]],D=[[2,0],[-2,0],[0,2],[0,-2]];
- G[1][1]=0;
- while(q.length){
-  let [r,c]=q[q.length-1];
-  let z=D.map(([a,b])=>[r+a,c+b,a,b])
-   .filter(x=>x[0]>0&&x[0]<n-1&&x[1]>0&&x[1]<n-1&&G[x[0]][x[1]]);
-  if(!z.length){q.pop();continue}
-  let [r2,c2,a,b]=z[Math.floor(Math.random()*z.length)];
-  G[r+a/2][c+b/2]=0;
-  G[r2][c2]=0;
-  q.push([r2,c2]);
- }
- C=[
-  {r:1,c:1,k:"o",name:"🟠 Orange"},
-  {r:1,c:n-2,k:"u",name:"🔵 Blue"},
-  {r:n-2,c:1,k:"g",name:"🟢 Green"}
- ];
- Z={r:n-2,c:n-2};
- C.forEach(x=>G[x.r][x.c]=0);
- G[Z.r][Z.c]=0;
- on=0;done=0;
- t.textContent="0.00";
- s.textContent="Touch a cat to start!";
- draw();
+  clearInterval(rt);
+  clearInterval(ct);
+
+  G=Array.from({length:n},()=>Array(n).fill(1));
+
+  let q=[[1,1]];
+  const D=[[2,0],[-2,0],[0,2],[0,-2]];
+  G[1][1]=0;
+
+  while(q.length){
+    let [r,c]=q[q.length-1];
+
+    let z=D.map(([a,d])=>[r+a,c+d,a,d])
+      .filter(x =>
+        x[0]>0 && x[0]<n-1 &&
+        x[1]>0 && x[1]<n-1 &&
+        G[x[0]][x[1]]
+      );
+
+    if(!z.length){
+      q.pop();
+      continue;
+    }
+
+    let [r2,c2,a,d]=z[Math.floor(Math.random()*z.length)];
+
+    G[r+a/2][c+d/2]=0;
+    G[r2][c2]=0;
+    q.push([r2,c2]);
+  }
+
+  const mid=Math.floor(n/2);
+
+  C=[
+    {r:1,c:1,k:"o",name:"🟠 Orange"},
+    {r:1,c:n-2,k:"u",name:"🔵 Blue"},
+    {r:n-2,c:1,k:"g",name:"🟢 Green"},
+    {r:n-2,c:n-2,k:"p",name:"🟣 Purple"}
+  ];
+
+  Z={r:mid,c:mid};
+
+  C.forEach(x=>G[x.r][x.c]=0);
+  G[Z.r][Z.c]=0;
+
+  on=0;
+  done=0;
+
+  t.textContent="0.00";
+  s.textContent="Touch a cat to start!";
+
+  draw();
 }
 
 function path(x){
- let Q=[[x.r,x.c]],P={[x.r+","+x.c]:null};
- let d=[[1,0],[-1,0],[0,1],[0,-1]];
- for(let i=0;i<Q.length;i++){
-  let [r,c]=Q[i],k=r+","+c;
-  if(r==Z.r&&c==Z.c){
-   let a=[];
-   while(k!=x.r+","+x.c){
-    a.unshift(k.split(",").map(Number));
-    k=P[k];
-   }
-   return a;
+  let Q=[[x.r,x.c]];
+  let P={[x.r+","+x.c]:null};
+  const d=[[1,0],[-1,0],[0,1],[0,-1]];
+
+  for(let i=0;i<Q.length;i++){
+    let [r,c]=Q[i];
+    let k=r+","+c;
+
+    if(r===Z.r && c===Z.c){
+      let a=[];
+
+      while(k!==x.r+","+x.c){
+        a.unshift(k.split(",").map(Number));
+        k=P[k];
+      }
+
+      return a;
+    }
+
+    for(let [v,w] of d){
+      let R=r+v;
+      let K=c+w;
+      let h=R+","+K;
+
+      if(
+        R>=0 && R<n &&
+        K>=0 && K<n &&
+        !G[R][K] &&
+        P[h]===undefined
+      ){
+        P[h]=k;
+        Q.push([R,K]);
+      }
+    }
   }
-  for(let [v,w] of d){
-   let R=r+v,K=c+w,h=R+","+K;
-   if(R>=0&&R<n&&K>=0&&K<n&&!G[R][K]&&P[h]===undefined){
-    P[h]=k;
-    Q.push([R,K]);
-   }
-  }
- }
- return [];
+
+  return [];
 }
 
 function draw(){
- b.innerHTML="";
- for(let r=0;r<n;r++)for(let c=0;c<n;c++){
-  let e=document.createElement("div");
-  e.className="c "+(G[r][c]?"w":"f");
-  if(r==Z.r&&c==Z.c){
-   e.className+=" x";
-   e.textContent="🧀";
+  b.innerHTML="";
+
+  for(let r=0;r<n;r++){
+    for(let c=0;c<n;c++){
+
+      let e=document.createElement("div");
+
+      e.className="c "+(G[r][c]?"w":"f");
+
+      if(r===Z.r && c===Z.c){
+        e.className+=" x";
+        e.textContent="🧀";
+      }
+
+      let x=C.find(x=>x.r===r && x.c===c);
+
+      if(x){
+        e.className="c "+x.k;
+        e.textContent="🐱";
+      }
+
+      b.append(e);
+    }
   }
-  let x=C.find(x=>x.r==r&&x.c==c);
-  if(x){
-   e.className="c "+x.k;
-   e.textContent="🐱";
-  }
-  b.append(e);
- }
 }
 
 function start(){
- if(on||done)return;
- on=1;
- st=performance.now();
- s.textContent="🏁 RACE!";
- ct=setInterval(()=>{
-  t.textContent=((performance.now()-st)/1000).toFixed(2);
- },20);
- rt=setInterval(()=>{
-  C.forEach(x=>{
-   let p=path(x);
-   if(p.length)[x.r,x.c]=p[0];
-  });
-  draw();
-  let w=C.find(x=>x.r==Z.r&&x.c==Z.c);
-  if(w){
-   done=1;
-   clearInterval(rt);
-   clearInterval(ct);
-   s.textContent="🔔 "+w.name+" WINS! 🧀";
-   beep();
-   setTimeout(newMaze,3000);
-  }
- },170);
+  if(on || done)return;
+
+  on=1;
+  st=performance.now();
+
+  s.textContent="🏁 RACE!";
+
+  ct=setInterval(()=>{
+    t.textContent=((performance.now()-st)/1000).toFixed(2);
+  },20);
+
+  rt=setInterval(()=>{
+
+    C.forEach(x=>{
+      let p=path(x);
+
+      if(p.length){
+        [x.r,x.c]=p[0];
+      }
+    });
+
+    draw();
+
+    let w=C.find(x=>x.r===Z.r && x.c===Z.c);
+
+    if(w){
+      done=1;
+
+      clearInterval(rt);
+      clearInterval(ct);
+
+      s.textContent="🔔 "+w.name+" WINS! 🧀";
+
+      beep();
+
+      setTimeout(newMaze,3000);
+    }
+
+  },120);
 }
 
 function beep(){
- try{
-  let a=new AudioContext,o=a.createOscillator(),v=a.createGain();
-  o.connect(v);v.connect(a.destination);
-  o.frequency.value=880;
-  v.gain.value=.15;
-  o.start();
-  o.stop(a.currentTime+.5);
- }catch(e){}
+  try{
+    let a=new AudioContext();
+    let o=a.createOscillator();
+    let v=a.createGain();
+
+    o.connect(v);
+    v.connect(a.destination);
+
+    o.frequency.value=880;
+    v.gain.value=.15;
+
+    o.start();
+    o.stop(a.currentTime+.5);
+  }catch(e){}
 }
 
 b.onpointerdown=start;
+
 newMaze();
 </script>
 </body>
-</html> Sent from Yahoo Mail for iPhone
-Message 2 of 2. For JAWS, turn virtual PC Cursor on if needed.
-Srinath Iyengar
-To:  me · Thu, Sep 17 at 11:41 PM
-Message Body
-
-<!doctype html>
-<html>
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Cat & Cheese Race</title>
-<style>
-body{text-align:center;font-family:system-ui;background:#f5f7fb}
-#b{display:grid;grid-template-columns:repeat(11,1fr);max-width:500px;margin:auto;background:#234;padding:5px;border-radius:12px}
-.c{aspect-ratio:1;display:grid;place-items:center;font-size:22px}
-.w{background:#234}.f{background:#fff3cf}.o{background:#ffc477}.u{background:#8dd7ff}.g{background:#9be6a6}.x{background:#d9f5b0}
-button{padding:9px 14px;border-radius:10px;border:1px solid #bbb;background:white;font-weight:bold}
-</style>
-</head>
-<body>
-<h1>🐱 Cat & Cheese Race</h1>
-<button onclick="newMaze()">NEW MAZE</button>
-<p id="s">Touch a cat to start!</p>
-<p>⏱ <span id="t">0.00</span>s</p>
-<div id="b"></div>
-
-<script>
-let n=11,G,C,Z,on=0,done=0,st,rt,ct;
-const b=document.getElementById("b");
-const t=document.getElementById("t");
-const s=document.getElementById("s");
-
-function newMaze(){
- clearInterval(rt);clearInterval(ct);
- G=Array.from({length:n},()=>Array(n).fill(1));
- let q=[[1,1]],D=[[2,0],[-2,0],[0,2],[0,-2]];
- G[1][1]=0;
- while(q.length){
-  let [r,c]=q[q.length-1];
-  let z=D.map(([a,b])=>[r+a,c+b,a,b])
-   .filter(x=>x[0]>0&&x[0]<n-1&&x[1]>0&&x[1]<n-1&&G[x[0]][x[1]]);
-  if(!z.length){q.pop();continue}
-  let [r2,c2,a,b]=z[Math.floor(Math.random()*z.length)];
-  G[r+a/2][c+b/2]=0;
-  G[r2][c2]=0;
-  q.push([r2,c2]);
- }
- C=[
-  {r:1,c:1,k:"o",name:"🟠 Orange"},
-  {r:1,c:n-2,k:"u",name:"🔵 Blue"},
-  {r:n-2,c:1,k:"g",name:"🟢 Green"}
- ];
- Z={r:n-2,c:n-2};
- C.forEach(x=>G[x.r][x.c]=0);
- G[Z.r][Z.c]=0;
- on=0;done=0;
- t.textContent="0.00";
- s.textContent="Touch a cat to start!";
- draw();
-}
-
-function path(x){
- let Q=[[x.r,x.c]],P={[x.r+","+x.c]:null};
- let d=[[1,0],[-1,0],[0,1],[0,-1]];
- for(let i=0;i<Q.length;i++){
-  let [r,c]=Q[i],k=r+","+c;
-  if(r==Z.r&&c==Z.c){
-   let a=[];
-   while(k!=x.r+","+x.c){
-    a.unshift(k.split(",").map(Number));
-    k=P[k];
-   }
-   return a;
-  }
-  for(let [v,w] of d){
-   let R=r+v,K=c+w,h=R+","+K;
-   if(R>=0&&R<n&&K>=0&&K<n&&!G[R][K]&&P[h]===undefined){
-    P[h]=k;
-    Q.push([R,K]);
-   }
-  }
- }
- return [];
-}
-
-function draw(){
- b.innerHTML="";
- for(let r=0;r<n;r++)for(let c=0;c<n;c++){
-  let e=document.createElement("div");
-  e.className="c "+(G[r][c]?"w":"f");
-  if(r==Z.r&&c==Z.c){
-   e.className+=" x";
-   e.textContent="🧀";
-  }
-  let x=C.find(x=>x.r==r&&x.c==c);
-  if(x){
-   e.className="c "+x.k;
-   e.textContent="🐱";
-  }
-  b.append(e);
- }
-}
-
-function start(){
- if(on||done)return;
- on=1;
- st=performance.now();
- s.textContent="🏁 RACE!";
- ct=setInterval(()=>{
-  t.textContent=((performance.now()-st)/1000).toFixed(2);
- },20);
- rt=setInterval(()=>{
-  C.forEach(x=>{
-   let p=path(x);
-   if(p.length)[x.r,x.c]=p[0];
-  });
-  draw();
-  let w=C.find(x=>x.r==Z.r&&x.c==Z.c);
-  if(w){
-   done=1;
-   clearInterval(rt);
-   clearInterval(ct);
-   s.textContent="🔔 "+w.name+" WINS! 🧀";
-   beep();
-   setTimeout(newMaze,3000);
-  }
- },170);
-}
-
-function beep(){
- try{
-  let a=new AudioContext,o=a.createOscillator(),v=a.createGain();
-  o.connect(v);v.connect(a.destination);
-  o.frequency.value=880;
-  v.gain.value=.15;
-  o.start();
-  o.stop(a.currentTime+.5);
- }catch(e){}
-}
-
-b.onpointerdown=start;
-newMaze();
-</script>
-</body>
-</html> 
+</html>
